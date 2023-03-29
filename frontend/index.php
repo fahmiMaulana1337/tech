@@ -69,20 +69,19 @@
             <!-- Product Section -->
             <section class="col-md-9 ms-sm-auto col-lg-10 px-md-4" id="product-section">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="display-2">Products</h1>
+                    <h1 class="display-2">Data</h1>
+                    <button id="reloadBtn" class="btn btn-primary">Reload Page</button>
                 </div>
                 <div class="row">
                     <div class="col-12 table-responsive">
                         <table class="table align-middle">
                             <thead>
                                 <tr>
-                                    <th scope="col">#</th>
+                               
                                     <th scope="col">Date</th>
                                     <th scope="col" width="180px">Label</th>
                                     <th scope="col" width="250px">nb_visit</th>
                                     <th scope="col">status</th>
-                                    <!-- <th scope="col">Price</th>
-                                    <th scope="col">Author</th> -->
                                     <th scope="col" width="50px">Action</th> 
                                 </tr>
                             </thead>
@@ -104,9 +103,60 @@
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
 
+              function getDetail(id){
+                $('#dataModal').empty();
+                $.ajax({
+                    method: 'GET',
+                    url: `http://localhost:3000/${id}`,
+                    headers: {
+                        access_token: localStorage.getItem('access_token')
+                    }
+                })
+                .done(function (response) {
+                    const result=response
+                    console.log(result.label)
+                    const data = /*html*/`
+                    <p>Label: ${result.label || 'Tidak ada data'}</p>
+                    <p>nb_visits: ${result.nb_visits || 'Tidak ada data'}</p>
+                    <p>nb_hits: ${result.nb_hits || 'Tidak ada data'}</p>
+                    <p>sum_time_spent: ${result.sum_time_spent || 'Tidak ada data'}</p>
+                    <p>nb_hits_with_time_generation: ${result.nb_hits_with_time_generation || 'Tidak ada data'}</p>
+                    <p>min_time_generation: ${result.min_time_generation || 'Tidak ada data'}</p>
+                    <p>max_time_generation: ${result.max_time_generation || 'Tidak ada data'}</p>
+                    <p>sum_bandwidth: ${result.sum_bandwidth || 'Tidak ada data'}</p>
+                    <p>nb_hits_with_bandwidth: ${result.nb_hits_with_bandwidth || 'Tidak ada data'}</p>
+                    <p>min_bandwidth: ${result.min_bandwidth || 'Tidak ada data'}</p>
+                    <p>max_bandwidth: ${result.max_bandwidth || 'Tidak ada data'}</p>
+                    <p>entry_nb_visits: ${result.entry_nb_visits || 'Tidak ada data'}</p>
+                    <p>entry_nb_actions: ${result.entry_nb_actions || 'Tidak ada data'}</p>
+                    <p>entry_sum_visit_length: ${result.entry_sum_visit_length || 'Tidak ada data'}</p>
+                    <p>entry_bounce_count: ${result.entry_bounce_count || 'Tidak ada data'}</p>
+                    <p>exit_nb_visits: ${result.exit_nb_visits || 'Tidak ada data'}</p>
+                    <p>sum_daily_nb_uniq_visitors: ${result.sum_daily_nb_uniq_visitors || 'Tidak ada data'}</p>
+                    <p>sum_daily_entry_nb_uniq_visitors: ${result.sum_daily_entry_nb_uniq_visitors || 'Tidak ada data'}</p>
+                    <p>sum_daily_exit_nb_uniq_visitors: ${result.sum_daily_exit_nb_uniq_visitors || 'Tidak ada data'}</p>
+                    <p>avg_bandwidth: ${result.avg_bandwidth || 'Tidak ada data'}</p>
+                    <p>avg_time_on_page: ${result.avg_time_on_page || 'Tidak ada data'}</p>
+                    <p>bounce_rate: ${result.bounce_rate || 'Tidak ada data'}</p>
+                    <p>exit_rate: ${result.exit_rate || 'Tidak ada data'}</p>
+                    <p>avg_time_generation:: ${result.avg_time_generation || 'Tidak ada data'}</p>
+                    `
+                    $('#dataModal').append(data)
+                })
+                .fail(function (err) {
+                    console.log(err)
+                    Swal.fire({
+                        icon: 'success',
+                        text: `Tidak Ada Data`,
+                    })
+                })
+            }
+    </script>
     <script>
         $(document).ready(function() {
+
             if (!localStorage.getItem('access_token')) {
                 console.log(localStorage.getItem('access_token'), "<<<<<<<<<<<<<<<<<");
                 $('#login-section').show()
@@ -117,7 +167,10 @@
                 $('#login-section').hide()
                 $('#product-section').show()
             }
-
+            
+            $('#reloadBtn').click(function() {
+                location.reload(); 
+            });
             function fetchData() {
                 $.ajax({
                     method: 'GET',
@@ -128,15 +181,11 @@
                 })
                 .done(function (response) {
                 for (const key in response) {
-                    // console.log(key)
-                    // console.log(response)
                     let [result] = response[key]
-                    console.log(result)
-                    
-                    // const [result] = response[key].label
+                  
                     const data =/*html*/`
                         <tr>
-                        <td scope="row"></td>
+                
                         <td class="fw-bold">${key} </td>
                         <td class="fw-bold">${result?.label || 'Tidak ada data'} </td>
 
@@ -144,7 +193,7 @@
                         <td>${result?.status || 'Tidak ada data'}</td>
                         <td>
                      
-                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                            <button type="button" class="btn btn-info" data-bs-toggle="modal"  onclick="getDetail(${key.replace('-','.')})"  data-bs-target="#exampleModal">
                             Detail
                             </button>
 
@@ -156,12 +205,11 @@
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                                <div class="modal-body">
-                                    <p>${response || 'Tidak ada data'}</p>
+                                <div class="modal-body" id="dataModal">
+                                  
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary">Save changes</button>
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
                                 </div>
                                 </div>
                             </div>
@@ -177,10 +225,9 @@
             })
           .fail(function (err) {
             Swal.fire({
-              icon: 'error',
-              title: 'Oops...',
-              text: `${err.responseJSON}`,
-              footer: '<a href="">Why do I have this issue?</a>'
+              icon: 'success',
+              text: `Tidak Ada Data`,
+              
             })
           })
             }
@@ -216,12 +263,12 @@
                             text: `${err.responseJSON.msg}`,
                             footer: '<a href="">Why do I have this issue?</a>'
                         })
-                        console.log(err.responseJSON);
+                    
                     })
 
             })
 
-
+      
         });
     </script>
 </body>

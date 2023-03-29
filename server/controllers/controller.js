@@ -32,6 +32,29 @@ class Controller {
             response.status(500).json(err);
         }
     }
+
+    static async getDetail(req,response){
+        try {
+            let { id } = req.params;
+
+            id = id.replace('.','-')
+            const res = await axios({
+                method: 'get',
+                url: `https://devel.bebasbayar.com:81/web/test_programmer.php`,
+            })
+            for (const key in res.data) {
+                if(key == id){
+                    const [result]= res.data[key]
+                    console.log(result)
+                    response.status(200).json(result)
+                }
+            }
+
+
+        } catch (error) {
+            response.status(500).json(error)
+        }
+    }
 }
 
 module.exports = Controller;
