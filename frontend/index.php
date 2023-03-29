@@ -77,13 +77,13 @@
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col" width="180px">Image</th>
-                                    <th scope="col" width="250px">Description</th>
-                                    <th scope="col">Stock</th>
-                                    <th scope="col">Price</th>
-                                    <th scope="col">Author</th>
-                                    <th scope="col" width="50px"></th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col" width="180px">Label</th>
+                                    <th scope="col" width="250px">nb_visit</th>
+                                    <th scope="col">status</th>
+                                    <!-- <th scope="col">Price</th>
+                                    <th scope="col">Author</th> -->
+                                    <th scope="col" width="50px">Action</th> 
                                 </tr>
                             </thead>
                             <tbody id="table-product">
@@ -110,16 +110,15 @@
             if (!localStorage.getItem('access_token')) {
                 console.log(localStorage.getItem('access_token'), "<<<<<<<<<<<<<<<<<");
                 $('#login-section').show()
-                fetchData()
                 $('#product-section').hide()
             } else {
+                fetchData()
                 console.log("masuk", localStorage.getItem.access_token)
                 $('#login-section').hide()
                 $('#product-section').show()
             }
 
             function fetchData() {
-                console.log("masuk")
                 $.ajax({
                     method: 'GET',
                     url: 'http://localhost:3000/',
@@ -127,12 +126,63 @@
                         access_token: localStorage.getItem('access_token')
                     }
                 })
-                .done (function(response){
-                    console.log(response)
-                })
-                .fail (function(err){
-                    console.log(err)
-                })
+                .done(function (response) {
+                for (const key in response) {
+                    // console.log(key)
+                    // console.log(response)
+                    let [result] = response[key]
+                    console.log(result)
+                    
+                    // const [result] = response[key].label
+                    const data =/*html*/`
+                        <tr>
+                        <td scope="row"></td>
+                        <td class="fw-bold">${key} </td>
+                        <td class="fw-bold">${result?.label || 'Tidak ada data'} </td>
+
+                        <td>${result?.nb_visits|| 'Tidak ada data'}</td>
+                        <td>${result?.status || 'Tidak ada data'}</td>
+                        <td>
+                     
+                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                            Detail
+                            </button>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>${response || 'Tidak ada data'}</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Save changes</button>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+                        </td>
+                    </tr>
+                ` 
+                $('#table-product').append(data)
+                }
+                console.log("masuk fetch")
+                // $('#table-product').empty();
+                
+            })
+          .fail(function (err) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: `${err.responseJSON}`,
+              footer: '<a href="">Why do I have this issue?</a>'
+            })
+          })
             }
             $('#login-form').on('submit', function() {
                 event.preventDefault()
